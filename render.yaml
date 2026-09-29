@@ -33,4 +33,7 @@ services:
   - type: keyvalue
     name: day12-redis
     plan: free
+    # Internal Key Value URLs are reachable only from services in the same
+    # Render region. Keep this aligned with the web service above.
+    region: singapore
     ipAllowList: []
