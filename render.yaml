@@ -15,7 +15,6 @@ services:
     # image-build jobs pass. This avoids deploying an unverified commit.
     autoDeployTrigger: off
     healthCheckPath: /health
-    maxShutdownDelaySeconds: 30
     envVars:
       - key: AGENT_API_KEY
         sync: false
