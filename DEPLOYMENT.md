@@ -102,10 +102,13 @@ Cần sync/deploy lại Blueprint trên Render rồi chạy lại pytest tests/t
    GitHub/Render và không commit khóa này.
 4. Chờ deploy lần đầu hoàn tất, sao chép Public URL HTTPS vào bảng Service,
    chạy các lệnh kiểm tra ở trên và chụp lại dashboard/health.
-5. Trong Render service Settings, tạo/copy **Deploy Hook**. Thêm URL này vào
-   GitHub repository secret có tên `RENDER_DEPLOY_HOOK_URL`. Từ commit sau,
-   job `Deploy to Render` chỉ chạy sau khi jobs Test và Build xanh.
-6. Chạy `pytest tests/test_cp5.py -v` với `LOCAL_FALLBACK=false` để xác nhận
+5. Sau mỗi lần đổi `render.yaml`, vào Blueprint trên Render và chọn **Sync
+   Blueprint**. Việc này cập nhật `REDIS_URL` từ `day12-redis` sang web service;
+   chỉ bấm Manual Deploy sẽ không cập nhật biến tham chiếu.
+6. Render dùng `autoDeployTrigger: checksPass`, vì vậy các commit lên `main`
+   chỉ được deploy sau khi GitHub Actions CI xanh. Job Deploy trong workflow vẫn
+   hỗ trợ Deploy Hook tùy chọn qua GitHub Secret `RENDER_DEPLOY_HOOK_URL`.
+7. Chạy `pytest tests/test_cp5.py -v` với `LOCAL_FALLBACK=false` để xác nhận
    endpoint công khai trước khi nộp.
 
 ## Nếu Dùng Phương Án Dự Phòng
