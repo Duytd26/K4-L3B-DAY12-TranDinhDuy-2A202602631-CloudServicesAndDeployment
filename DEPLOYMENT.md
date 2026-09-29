@@ -1,79 +1,78 @@
 # Thông Tin Deploy — Checkpoint 5
 
-> Điền file này sau khi deploy xong. `pytest tests/test_cp5.py` đọc file này
-> để tìm địa chỉ service của bạn và gọi thử.
+> Mục tiêu: deploy bằng Render Blueprint, dùng Redis managed của Render. Không
+> đưa API key hay Deploy Hook URL vào repository.
 >
-> **Chỉ ghi TÊN biến môi trường, tuyệt đối không dán giá trị API key vào đây.**
+> Chỉ ghi TÊN biến môi trường, tuyệt đối không dán giá trị API key vào đây.
 > Repo này công khai — dán khóa vào là mất khóa.
 
 ## Thông Tin Học Viên
 
 | Mục | Nội dung |
 |-----|----------|
-| Họ và tên | (điền họ tên) |
-| Mã học viên | (điền mã học viên) |
-| Repo | (điền link repo K4-L3B-DAY12-HoVaTen-MSSV-CloudServicesAndDeployment) |
+| Họ và tên | Trần Đình Duy |
+| Mã học viên | 2A202602631 |
+| Repo | K4-L3B-DAY12-TranDinhDuy-2A202602631-CloudServicesAndDeployment |
 
 ## Service
 
 | Mục | Nội dung |
 |-----|----------|
-| Public URL | https://TODO-thay-bang-url-that.up.railway.app |
-| Platform | Railway / Render / Cloud Run — (điền platform bạn dùng) |
-| Ngày deploy | (điền ngày) |
+| Public URL | _Điền URL HTTPS `https://...onrender.com` sau khi Blueprint deploy thành công_ |
+| Platform | Render Blueprint + Render Key Value (Redis compatible) |
+| Ngày deploy | Chưa deploy |
 
-## Biến Môi Trường Đã Set Trên Cloud
+## Biến Môi Trường Cần Set Trên Render
 
 Ghi tên biến và **nguồn giá trị**, không ghi giá trị:
 
 | Biến | Đã set | Ghi chú |
 |------|--------|---------|
-| `PORT` | ✅ | platform tự gán |
-| `AGENT_API_KEY` | ✅ | đặt trong dashboard, không nằm trong repo |
-| `REDIS_URL` | ✅ | (điền: Redis add-on của platform / Upstash / ...) |
-| `RATE_LIMIT_PER_MINUTE` | ✅ | 10 |
-| `MONTHLY_BUDGET_USD` | ✅ | 10.0 |
-| `LOG_LEVEL` | ✅ | INFO |
+| `PORT` | Render tự gán | Không tự khai báo giá trị |
+| `AGENT_API_KEY` | Nhập khi tạo Blueprint | Secret, không nằm trong repo |
+| `REDIS_URL` | `fromService` trong `render.yaml` | Lấy connection string của Key Value service |
+| `RATE_LIMIT_PER_MINUTE` | `render.yaml` | 10 |
+| `MONTHLY_BUDGET_USD` | `render.yaml` | 10.0 |
+| `LOG_LEVEL` | `render.yaml` | INFO |
 
 ## Lệnh Kiểm Tra
 
-Thay `<URL>` bằng Public URL ở trên:
+Sau khi deploy, thay URL bên dưới bằng Public URL HTTPS ở bảng Service:
 
 ```bash
 # 1. Liveness — mong đợi 200 {"status":"ok"}
-curl -i <URL>/health
+curl -i https://YOUR-SERVICE.onrender.com/health
 
 # 2. Readiness — mong đợi 200 {"status":"ready"} (đã nối được Redis)
-curl -i <URL>/ready
+curl -i https://YOUR-SERVICE.onrender.com/ready
 
 # 3. Không có API key — mong đợi 401
-curl -i -X POST <URL>/ask \
-  -H "Content-Type: application/json" \
-  -d '{"question":"Hello"}'
+curl -i -X POST https://YOUR-SERVICE.onrender.com/ask ^
+  -H "Content-Type: application/json" ^
+  -d "{\"question\":\"Hello\"}"
 
 # 4. Có API key — mong đợi 200 kèm câu trả lời
-curl -i -X POST <URL>/ask \
-  -H "Content-Type: application/json" \
-  -H "X-API-Key: $AGENT_API_KEY" \
-  -H "X-User-Id: sv-test" \
-  -d '{"question":"Deploy là gì?"}'
+curl -i -X POST https://YOUR-SERVICE.onrender.com/ask ^
+  -H "Content-Type: application/json" ^
+  -H "X-API-Key: %AGENT_API_KEY%" ^
+  -H "X-User-Id: sv-test" ^
+  -d "{\"question\":\"Deploy là gì?\"}"
 
 # 5. Rate limit — gọi 15 lần, những lần cuối phải trả 429
-for i in $(seq 1 15); do
-  curl -s -o /dev/null -w "%{http_code} " -X POST <URL>/ask \
-    -H "Content-Type: application/json" \
-    -H "X-API-Key: $AGENT_API_KEY" \
-    -H "X-User-Id: sv-test" \
-    -d '{"question":"test"}'
-done; echo
+for /l %i in (1,1,15) do @curl -s -o NUL -w "%{http_code} " -X POST https://YOUR-SERVICE.onrender.com/ask ^
+  -H "Content-Type: application/json" ^
+  -H "X-API-Key: %AGENT_API_KEY%" ^
+  -H "X-User-Id: sv-test" ^
+  -d "{\"question\":\"test\"}"
 ```
 
 ## Kết Quả Chạy Thật
 
-Dán output của các lệnh trên vào đây:
+Dán output thực tế sau deploy vào đây:
 
 ```
-(điền output)
+Chưa deploy. Sau khi Render trả trạng thái **Live**, ghi kết quả của `/health`,
+`/ready`, request 401 không key và request 200 có API key tại đây.
 ```
 
 ## Ảnh Chụp Màn Hình
@@ -84,6 +83,21 @@ Dán output của các lệnh trên vào đây:
 - `screenshots/health.png` — kết quả gọi `/health` từ trình duyệt hoặc curl
 
 ---
+
+## Các bước triển khai Render
+
+1. Push commit này lên nhánh `main` của repository public.
+2. Trên Render, chọn **New +** → **Blueprint**, kết nối repository này và chọn
+   `render.yaml`. Render sẽ tạo web service cùng Key Value store.
+3. Khi Render hỏi `AGENT_API_KEY`, nhập một khóa ngẫu nhiên riêng. Không dùng
+   token GitHub/Render và không commit khóa này.
+4. Chờ deploy lần đầu hoàn tất, sao chép Public URL HTTPS vào bảng Service,
+   chạy các lệnh kiểm tra ở trên và chụp lại dashboard/health.
+5. Trong Render service Settings, tạo/copy **Deploy Hook**. Thêm URL này vào
+   GitHub repository secret có tên `RENDER_DEPLOY_HOOK_URL`. Từ commit sau,
+   job `Deploy to Render` chỉ chạy sau khi jobs Test và Build xanh.
+6. Chạy `pytest tests/test_cp5.py -v` với `LOCAL_FALLBACK=false` để xác nhận
+   endpoint công khai trước khi nộp.
 
 ## Nếu Dùng Phương Án Dự Phòng
 
@@ -97,5 +111,6 @@ Không đăng ký được tài khoản cloud? Vẫn nộp được bài, nhưng
 5. Ghi rõ lý do không deploy được vào phần dưới đây:
 
 ```
-(điền lý do nếu dùng phương án dự phòng, ngược lại xóa mục này)
+Không dùng cloud ở môi trường hiện tại vì đang dùng phương án triển khai cục bộ
+qua Docker Compose để hoàn tất bài lab và xác minh chức năng trước khi nộp.
 ```

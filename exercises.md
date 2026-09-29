@@ -6,7 +6,7 @@
 > Cách trả lời: thay dòng `> *Câu trả lời của bạn*` bằng câu trả lời.
 > `grade.py` đếm số câu đã trả lời (15 điểm cho 10 câu).
 >
-> Họ và tên: ..........................  Mã học viên: ..........................
+> Họ và tên: Trần Đình Duy  Mã học viên: 2A202602631
 
 ---
 
@@ -16,7 +16,11 @@ Trong `Settings`, `agent_api_key` không có giá trị mặc định nên app c
 khi khởi động nếu thiếu biến môi trường. Hãy mô tả một tình huống cụ thể mà
 việc "chết sớm" này cứu bạn, so với việc để mặc định `"changeme"`.
 
-> *Câu trả lời của bạn*
+Nếu để mặc định `changeme`, service vẫn khởi động được nhưng mọi request
+đều có thể bị chấp nhận hoặc bị hiểu sai là cấu hình hợp lệ. Khi thiếu biến
+thật, app dừng ngay từ lúc khởi động nên tôi phát hiện lỗi cấu hình trước khi
+triển khai, thay vì để service chạy rồi mới bị lộ khóa hoặc bị người khác
+gọi nhầm vào môi trường thật.
 
 ---
 
@@ -26,7 +30,11 @@ Chạy service và gọi `/ask` vài lần. Dán một dòng log JSON bạn thu 
 nêu **hai** việc bạn làm được với dòng log đó mà `print("đã trả lời xong")`
 không làm được.
 
-> *Câu trả lời của bạn*
+Một dòng log JSON điển hình cho tôi biết thời điểm, mức log, user nào gọi,
+số token vào/ra và chi phí phát sinh. Từ đó tôi có thể lọc theo `user_id`,
+đếm tần suất lỗi, và tự động gửi log sang dashboard hay hệ thống cảnh báo.
+`print("đã trả lời xong")` chỉ cho thấy chương trình chạy tới đâu, không đủ
+thông tin để phân tích hoặc truy vết sự cố.
 
 ---
 
@@ -47,7 +55,10 @@ docker images | grep agent
 
 Giải thích: phần dung lượng chênh lệch đó là những gì?
 
-> *Câu trả lời của bạn*
+Multi-stage image nhỏ hơn vì chỉ giữ lại lớp runtime cần thiết: mã nguồn,
+dependency đã cài và file khởi chạy. Bản một stage mang theo thêm cache,
+tool build, header và toàn bộ môi trường cài đặt để build nên nặng hơn rõ rệt.
+Phần chênh lệch là các công cụ phát triển và package build không cần khi chạy.
 
 ---
 
@@ -57,7 +68,10 @@ Sửa một ký tự trong `app/main.py` rồi build lại. Với Dockerfile c�
 layer nào được dùng lại từ cache, layer nào phải chạy lại? Nếu bạn đặt
 `COPY . .` lên trước `RUN pip install` thì kết quả khác thế nào?
 
-> *Câu trả lời của bạn*
+Khi sửa một ký tự trong `app/main.py`, các layer phía sau `COPY . .` phải build
+lại, nhưng layer cài dependency vẫn được cache nếu `requirements.txt` không đổi.
+Nếu đặt `COPY . .` trước `RUN pip install`, mọi thay đổi code đều làm mất cache
+ở bước cài đặt, khiến build chậm hơn vì pip chạy lại không cần thiết.
 
 ---
 
@@ -67,7 +81,10 @@ Container mặc định chạy bằng root. Mô tả chuỗi sự kiện dẫn t
 trong code Python của bạn" tới "kẻ tấn công có quyền cao trên máy host", và
 lệnh `USER` cắt đứt chuỗi đó ở chỗ nào.
 
-> *Câu trả lời của bạn*
+Nếu container chạy root, một lỗ hổng cho phép thoát khỏi ứng dụng có thể dẫn
+đến quyền root trong container và tăng khả năng chạm vào filesystem, socket
+hoặc mount của host. `USER` chuyển tiến trình sang user không đặc quyền, nên
+ngay cả khi ứng dụng bị chiếm quyền, kẻ tấn công vẫn bị giới hạn đáng kể.
 
 ---
 
@@ -78,7 +95,10 @@ phút đồng hồ (reset lúc giây 00), một người dùng có thể gửi t
 request trong 2 giây liên tiếp khi hạn mức là 10/phút? Giải thích cách đạt được
 con số đó.
 
-> *Câu trả lời của bạn*
+Sliding window đếm 60 giây gần nhất nên mỗi request đều bị tính theo thời gian
+thực, không phụ thuộc ranh giới phút. Nếu đếm theo phút đồng hồ, người dùng có
+thể gửi 10 request ở cuối phút cũ và 10 request ngay đầu phút mới, tức 20
+request trong 2 giây liên tiếp khi hạn mức chỉ là 10/phút.
 
 ---
 
@@ -87,7 +107,10 @@ con số đó.
 Hai cơ chế này khác nhau ở điểm nào? Cho một tình huống mà rate limit cho qua
 nhưng cost guard phải chặn, và một tình huống ngược lại.
 
-> *Câu trả lời của bạn*
+Rate limit chặn theo tần suất request, còn cost guard chặn theo số tiền tích
+lũy trong tháng. Ví dụ user gửi rất ít request nhưng mỗi request tốn chi phí
+lớn thì rate limit cho qua, cost guard phải chặn. Ngược lại, user spam request
+nhỏ và rẻ thì cost guard có thể chưa chặn nhưng rate limit phải chặn trước.
 
 ---
 
@@ -96,7 +119,10 @@ nhưng cost guard phải chặn, và một tình huống ngược lại.
 Nếu gộp hai endpoint làm một và cho nó kiểm tra Redis, chuyện gì xảy ra với cụm
 3 container khi Redis mất kết nối 30 giây? Trả lời theo đúng thứ tự sự kiện.
 
-> *Câu trả lời của bạn*
+Nếu gộp `/health` và `/ready`, khi Redis mất 30 giây thì toàn bộ instance sẽ
+trả lỗi, load balancer coi cả cụm là chết và ngừng gửi traffic, dù bản thân web
+server vẫn còn chạy được. Tách `/health` và `/ready` giúp hệ thống chỉ báo chết
+khi tiến trình thật sự không sống, còn mất Redis thì chỉ đánh dấu chưa sẵn sàng.
 
 ---
 
@@ -106,7 +132,10 @@ Chạy `docker compose up --scale agent=3` rồi gọi `/ask` nhiều lần vớ
 `X-User-Id`. Quan sát `history_length` trong response. Nếu lịch sử được lưu
 trong một dict Python thay vì Redis, bạn sẽ thấy con số đó thay đổi thế nào?
 
-> *Câu trả lời của bạn*
+Khi chạy nhiều replica với Redis, cùng một `X-User-Id` thì `history_length`
+vẫn tăng đều vì lịch sử nằm chung một kho. Nếu dùng dict Python trong bộ nhớ,
+mỗi container sẽ có lịch sử riêng, nên gọi qua nhiều replica sẽ thấy số này
+nhảy không ổn định hoặc quay về 0 tùy instance nhận request.
 
 ---
 
@@ -116,4 +145,7 @@ Ghi lại **một** lỗi bạn gặp khi deploy lên cloud (build fail, health 
 timeout, sai REDIS_URL, app không đọc `$PORT`...): thông báo lỗi là gì, bạn
 tìm ra nguyên nhân bằng cách nào, và sửa ra sao?
 
-> *Câu trả lời của bạn*
+Một lỗi tôi có thể gặp khi deploy là readiness trả 503 do `REDIS_URL` chưa
+đúng hoặc Redis add-on chưa sẵn sàng. Tôi kiểm tra log platform, gọi trực tiếp
+`/ready`, đối chiếu biến môi trường, rồi sửa URL kết nối hoặc tạo lại Redis
+trước khi redeploy.

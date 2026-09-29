@@ -5,11 +5,17 @@
 
 services:
   - type: web
-    name: day12-agent
+    name: day12-agent-trandinhduy
     runtime: docker
     dockerfilePath: ./Dockerfile
     plan: free
+    region: singapore
+    branch: main
+    # GitHub Actions triggers the Render deploy hook only after its test and
+    # image-build jobs pass. This avoids deploying an unverified commit.
+    autoDeployTrigger: off
     healthCheckPath: /health
+    maxShutdownDelaySeconds: 30
     envVars:
       - key: AGENT_API_KEY
         sync: false
