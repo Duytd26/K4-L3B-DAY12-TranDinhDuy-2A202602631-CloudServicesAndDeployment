@@ -18,9 +18,9 @@
 
 | Mục | Nội dung |
 |-----|----------|
-| Public URL | _Điền URL HTTPS `https://...onrender.com` sau khi Blueprint deploy thành công_ |
+| Public URL | https://day12-agent-trandinhduy.onrender.com |
 | Platform | Render Blueprint + Render Key Value (Redis compatible) |
-| Ngày deploy | Chưa deploy |
+| Ngày deploy | 2026-09-29 |
 
 ## Biến Môi Trường Cần Set Trên Render
 
@@ -37,29 +37,29 @@ Ghi tên biến và **nguồn giá trị**, không ghi giá trị:
 
 ## Lệnh Kiểm Tra
 
-Sau khi deploy, thay URL bên dưới bằng Public URL HTTPS ở bảng Service:
+Các lệnh kiểm tra chạy với Public URL HTTPS ở bảng Service:
 
 ```bash
 # 1. Liveness — mong đợi 200 {"status":"ok"}
-curl -i https://YOUR-SERVICE.onrender.com/health
+curl -i https://day12-agent-trandinhduy.onrender.com/health
 
 # 2. Readiness — mong đợi 200 {"status":"ready"} (đã nối được Redis)
-curl -i https://YOUR-SERVICE.onrender.com/ready
+curl -i https://day12-agent-trandinhduy.onrender.com/ready
 
 # 3. Không có API key — mong đợi 401
-curl -i -X POST https://YOUR-SERVICE.onrender.com/ask ^
+curl -i -X POST https://day12-agent-trandinhduy.onrender.com/ask ^
   -H "Content-Type: application/json" ^
   -d "{\"question\":\"Hello\"}"
 
 # 4. Có API key — mong đợi 200 kèm câu trả lời
-curl -i -X POST https://YOUR-SERVICE.onrender.com/ask ^
+curl -i -X POST https://day12-agent-trandinhduy.onrender.com/ask ^
   -H "Content-Type: application/json" ^
   -H "X-API-Key: %AGENT_API_KEY%" ^
   -H "X-User-Id: sv-test" ^
   -d "{\"question\":\"Deploy là gì?\"}"
 
 # 5. Rate limit — gọi 15 lần, những lần cuối phải trả 429
-for /l %i in (1,1,15) do @curl -s -o NUL -w "%{http_code} " -X POST https://YOUR-SERVICE.onrender.com/ask ^
+for /l %i in (1,1,15) do @curl -s -o NUL -w "%{http_code} " -X POST https://day12-agent-trandinhduy.onrender.com/ask ^
   -H "Content-Type: application/json" ^
   -H "X-API-Key: %AGENT_API_KEY%" ^
   -H "X-User-Id: sv-test" ^
@@ -68,11 +68,20 @@ for /l %i in (1,1,15) do @curl -s -o NUL -w "%{http_code} " -X POST https://YOUR
 
 ## Kết Quả Chạy Thật
 
-Dán output thực tế sau deploy vào đây:
+Kết quả kiểm tra ngày 2026-09-29:
 
-```
-Chưa deploy. Sau khi Render trả trạng thái **Live**, ghi kết quả của `/health`,
-`/ready`, request 401 không key và request 200 có API key tại đây.
+```text
+GET /health
+HTTP/1.1 200 OK
+{"status":"ok","service":"day12-agent","version":"1.0.0"}
+
+GET /ready
+HTTP/1.1 500 Internal Server Error
+Internal Server Error
+
+Ghi chú: /ready hiện chưa đạt vì service Render chưa kết nối được Redis/Key Value.
+Đã sửa render.yaml để dùng type: keyvalue và REDIS_URL fromService connectionString.
+Cần sync/deploy lại Blueprint trên Render rồi chạy lại pytest tests/test_cp5.py -v.
 ```
 
 ## Ảnh Chụp Màn Hình
