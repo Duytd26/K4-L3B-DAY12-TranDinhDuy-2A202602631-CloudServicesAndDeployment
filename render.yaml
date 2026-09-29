@@ -24,14 +24,16 @@ services:
         value: "10"
       - key: MONTHLY_BUDGET_USD
         value: "10.0"
-      - key: REDIS_URL
-        fromService:
-          name: day12-redis
-          type: keyvalue
-          property: connectionString
+          - key: REDIS_URL
+            fromService:
+              name: day12-redis-sg
+              type: keyvalue
+              property: connectionString
 
   - type: keyvalue
-    name: day12-redis
+    # A new name allows Render to provision the store in Singapore even when
+    # an earlier `day12-redis` instance was created in another immutable region.
+    name: day12-redis-sg
     plan: free
     # Internal Key Value URLs are reachable only from services in the same
     # Render region. Keep this aligned with the web service above.

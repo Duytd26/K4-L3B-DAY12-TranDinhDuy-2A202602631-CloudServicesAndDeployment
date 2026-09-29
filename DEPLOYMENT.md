@@ -30,7 +30,7 @@ Ghi tên biến và **nguồn giá trị**, không ghi giá trị:
 |------|--------|---------|
 | `PORT` | Render tự gán | Không tự khai báo giá trị |
 | `AGENT_API_KEY` | `generateValue` trong `render.yaml` | Secret do Render tự tạo, không nằm trong repo |
-| `REDIS_URL` | `fromService` trong `render.yaml` | Lấy internal connection string của Key Value service cùng region Singapore |
+| `REDIS_URL` | `fromService` trong `render.yaml` | Lấy internal connection string của `day12-redis-sg` cùng region Singapore |
 | `RATE_LIMIT_PER_MINUTE` | `render.yaml` | 10 |
 | `MONTHLY_BUDGET_USD` | `render.yaml` | 10.0 |
 | `LOG_LEVEL` | `render.yaml` | INFO |
@@ -103,11 +103,12 @@ Cần sync/deploy lại Blueprint trên Render rồi chạy lại pytest tests/t
 4. Chờ deploy lần đầu hoàn tất, sao chép Public URL HTTPS vào bảng Service,
    chạy các lệnh kiểm tra ở trên và chụp lại dashboard/health.
 5. Sau mỗi lần đổi `render.yaml`, vào Blueprint trên Render và chọn **Sync
-   Blueprint**. Việc này cập nhật `REDIS_URL` từ `day12-redis` sang web service;
+   Blueprint**. Việc này tạo Key Value `day12-redis-sg` tại Singapore và cập nhật
+   `REDIS_URL` sang web service;
    chỉ bấm Manual Deploy sẽ không cập nhật biến tham chiếu.
    Key Value và web service phải cùng region **Singapore** thì internal URL mới
-   kết nối được. Nếu Key Value cũ ở region khác, tạo instance `day12-redis` mới
-   tại Singapore rồi Sync Blueprint hoặc thay `REDIS_URL` bằng internal URL mới.
+   kết nối được. Instance `day12-redis` cũ ở region khác (nếu có) không còn được
+   dùng và có thể xoá sau khi CP5 đã pass.
 6. Render dùng `autoDeployTrigger: checksPass`, vì vậy các commit lên `main`
    chỉ được deploy sau khi GitHub Actions CI xanh. Job Deploy trong workflow vẫn
    hỗ trợ Deploy Hook tùy chọn qua GitHub Secret `RENDER_DEPLOY_HOOK_URL`.
