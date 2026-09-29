@@ -24,11 +24,11 @@ services:
         value: "10"
       - key: MONTHLY_BUDGET_USD
         value: "10.0"
-          - key: REDIS_URL
-            fromService:
-              name: day12-redis-sg
-              type: keyvalue
-              property: connectionString
+      - key: REDIS_URL
+        fromService:
+          name: day12-redis-sg
+          type: keyvalue
+          property: connectionString
 
   - type: keyvalue
     # A new name allows Render to provision the store in Singapore even when
