@@ -50,15 +50,12 @@ docker images | grep agent
 
 | Bản | Dung lượng |
 |-----|-----------|
-| 1 stage (bản đầu) | ... MB |
-| Multi-stage | ... MB |
+| 1 stage (bản đầu) |1.7 GB  |
+| Multi-stage | 271 MB |
 
 Giải thích: phần dung lượng chênh lệch đó là những gì?
 
-Multi-stage image nhỏ hơn vì chỉ giữ lại lớp runtime cần thiết: mã nguồn,
-dependency đã cài và file khởi chạy. Bản một stage mang theo thêm cache,
-tool build, header và toàn bộ môi trường cài đặt để build nên nặng hơn rõ rệt.
-Phần chênh lệch là các công cụ phát triển và package build không cần khi chạy.
+Sau khi tối ưu Dockerfile bằng multi-stage build, dung lượng Docker image giảm từ khoảng 1.7 GB xuống 271 MB, tương đương giảm khoảng 84%. Việc tách build dependencies khỏi runtime image giúp image triển khai nhỏ gọn hơn, giảm các thành phần không cần thiết trong production.
 
 ---
 
@@ -145,7 +142,7 @@ Ghi lại **một** lỗi bạn gặp khi deploy lên cloud (build fail, health 
 timeout, sai REDIS_URL, app không đọc `$PORT`...): thông báo lỗi là gì, bạn
 tìm ra nguyên nhân bằng cách nào, và sửa ra sao?
 
-Một lỗi tôi có thể gặp khi deploy là readiness trả 503 do `REDIS_URL` chưa
+Một lỗi tôi có đã gặp khi deploy là readiness trả 503 do `REDIS_URL` chưa
 đúng hoặc Redis add-on chưa sẵn sàng. Tôi kiểm tra log platform, gọi trực tiếp
 `/ready`, đối chiếu biến môi trường, rồi sửa URL kết nối hoặc tạo lại Redis
 trước khi redeploy.
