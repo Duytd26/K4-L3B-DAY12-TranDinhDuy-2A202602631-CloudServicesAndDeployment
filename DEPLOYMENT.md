@@ -29,7 +29,7 @@ Ghi tên biến và **nguồn giá trị**, không ghi giá trị:
 | Biến | Đã set | Ghi chú |
 |------|--------|---------|
 | `PORT` | Render tự gán | Không tự khai báo giá trị |
-| `AGENT_API_KEY` | Nhập khi tạo Blueprint | Secret, không nằm trong repo |
+| `AGENT_API_KEY` | `generateValue` trong `render.yaml` | Secret do Render tự tạo, không nằm trong repo |
 | `REDIS_URL` | `fromService` trong `render.yaml` | Lấy connection string của Key Value service |
 | `RATE_LIMIT_PER_MINUTE` | `render.yaml` | 10 |
 | `MONTHLY_BUDGET_USD` | `render.yaml` | 10.0 |
@@ -98,8 +98,8 @@ Cần sync/deploy lại Blueprint trên Render rồi chạy lại pytest tests/t
 1. Push commit này lên nhánh `main` của repository public.
 2. Trên Render, chọn **New +** → **Blueprint**, kết nối repository này và chọn
    `render.yaml`. Render sẽ tạo web service cùng Key Value store.
-3. Khi Render hỏi `AGENT_API_KEY`, nhập một khóa ngẫu nhiên riêng. Không dùng
-   token GitHub/Render và không commit khóa này.
+3. Blueprint tự tạo `AGENT_API_KEY` bằng `generateValue`. Không dùng token
+   GitHub/Render và không commit khóa này.
 4. Chờ deploy lần đầu hoàn tất, sao chép Public URL HTTPS vào bảng Service,
    chạy các lệnh kiểm tra ở trên và chụp lại dashboard/health.
 5. Trong Render service Settings, tạo/copy **Deploy Hook**. Thêm URL này vào
